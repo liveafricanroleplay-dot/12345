@@ -28,7 +28,7 @@ jobs:
       - name: Extract startup-fix launcher ZIP and locate Android project
         run: |
           unzip -q AFRO_CITY_RP_Launcher_Server_Config_STARTUP_FIX.zip -d source
-          ANDROID_DIR="$(find source -type f -name gradlew -printf '%h\\n' | head -n 1)"
+          ANDROID_DIR="$(find source -type f -name gradlew -printf '%h\n' | head -n 1)"
           if [ -z "$ANDROID_DIR" ]; then echo "Could not locate Android gradlew in startup-fix ZIP"; exit 1; fi
           PROJECT_DIR="$(dirname "$ANDROID_DIR")"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
@@ -46,11 +46,22 @@ jobs:
             npm install
           fi
 
-      - name: Build Android debug APK
+      - name: Build Android debug APK with retry for repository rate limits
         run: |
           cd "$PROJECT_DIR/android"
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          for attempt in 1 2 3; do
+            echo "Gradle build attempt $attempt of 3"
+            if ./gradlew assembleDebug --no-daemon; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "Build failed; waiting 45 seconds before retry (temporary repository rate limits may clear)..."
+              sleep 45
+            fi
+          done
+          echo "Gradle build failed after 3 attempts."
+          exit 1
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
