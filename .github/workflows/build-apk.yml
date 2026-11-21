@@ -34,6 +34,13 @@ jobs:
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
           echo "Located Android project: $ANDROID_DIR"
 
+      - name: Remove unsupported Java splash timeout call from source ZIP
+        run: |
+          MAIN_ACTIVITY="$(find source -type f -name MainActivity.java | head -n 1)"
+          if [ -z "$MAIN_ACTIVITY" ]; then echo "MainActivity.java not found"; exit 1; fi
+          sed -i '/import android.os.Handler;/d; /import android.os.Looper;/d; /new Handler(Looper.getMainLooper()).postDelayed(() -> RNBootSplash.hide(this), 15000);/d' "$MAIN_ACTIVITY"
+          echo "Removed incompatible RNBootSplash.hide(MainActivity) call"
+
       - name: Install JavaScript dependencies
         run: |
           cd "$PROJECT_DIR"
