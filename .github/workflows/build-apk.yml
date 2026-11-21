@@ -53,13 +53,13 @@ jobs:
             npm install
           fi
 
-      - name: Build Android debug APK with retry for repository rate limits
+      - name: Build Android release APK with bundled React Native JavaScript
         run: |
           cd "$PROJECT_DIR/android"
           chmod +x gradlew
           for attempt in 1 2 3; do
             echo "Gradle build attempt $attempt of 3"
-            if ./gradlew assembleDebug --no-daemon; then
+            if ./gradlew assembleRelease --no-daemon; then
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
@@ -73,13 +73,13 @@ jobs:
       - name: Copy APK to upload folder
         run: |
           mkdir -p artifacts
-          cp "$PROJECT_DIR/android/app/build/outputs/apk/debug/"*.apk artifacts/
+          cp "$PROJECT_DIR/android/app/build/outputs/apk/release/"*.apk artifacts/
           ls -lh artifacts/
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AFRO-CITY-RP-Launcher-STARTUP-FIX-APK
+          name: AFRO-CITY-RP-Launcher-STARTUP-FIX-RELEASE-APK
           path: artifacts/*.apk
           if-no-files-found: error
           retention-days: 14
