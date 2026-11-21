@@ -28,7 +28,7 @@ jobs:
       - name: Extract startup-fix launcher ZIP and locate Android project
         run: |
           unzip -q AFRO_CITY_RP_Launcher_Server_Config_STARTUP_FIX.zip -d source
-          ANDROID_DIR="$(find source -type f -name gradlew -printf '%h\n' | head -n 1)"
+          ANDROID_DIR="$(find source -type f -name gradlew -printf '%h\\n' | head -n 1)"
           if [ -z "$ANDROID_DIR" ]; then echo "Could not locate Android gradlew in startup-fix ZIP"; exit 1; fi
           PROJECT_DIR="$(dirname "$ANDROID_DIR")"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
@@ -70,10 +70,16 @@ jobs:
           echo "Gradle build failed after 3 attempts."
           exit 1
 
+      - name: Copy APK to upload folder
+        run: |
+          mkdir -p artifacts
+          cp "$PROJECT_DIR/android/app/build/outputs/apk/debug/"*.apk artifacts/
+          ls -lh artifacts/
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: AFRO-CITY-RP-Launcher-STARTUP-FIX-APK
-          path: $PROJECT_DIR/android/app/build/outputs/apk/debug/*.apk
+          path: artifacts/*.apk
           if-no-files-found: error
           retention-days: 14
