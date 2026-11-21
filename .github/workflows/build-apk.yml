@@ -24,7 +24,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: npm
 
       - name: Extract exact uploaded launcher ZIP
         run: |
@@ -34,7 +33,6 @@ jobs:
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Install JavaScript dependencies
-        working-directory: source
         run: |
           cd "$PROJECT_DIR"
           if [ -f yarn.lock ]; then
@@ -47,7 +45,6 @@ jobs:
           fi
 
       - name: Build Android debug APK
-        working-directory: source
         run: |
           cd "$PROJECT_DIR/android"
           chmod +x gradlew
