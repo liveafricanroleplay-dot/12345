@@ -25,21 +25,14 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Extract startup-fix launcher ZIP and locate Android project
+      - name: Extract ORIGINAL IP-only launcher ZIP and locate Android project
         run: |
-          unzip -q AFRO_CITY_RP_Launcher_Server_Config_STARTUP_FIX.zip -d source
-          ANDROID_DIR="$(find source -type f -name gradlew -printf '%h\\n' | head -n 1)"
-          if [ -z "$ANDROID_DIR" ]; then echo "Could not locate Android gradlew in startup-fix ZIP"; exit 1; fi
+          unzip -q AFRO_CITY_RP_Original_Launcher_IP_Only.zip -d source
+          ANDROID_DIR="$(find source -type f -name gradlew -printf '%h\n' | head -n 1)"
+          if [ -z "$ANDROID_DIR" ]; then echo "Could not locate Android gradlew in original IP-only ZIP"; exit 1; fi
           PROJECT_DIR="$(dirname "$ANDROID_DIR")"
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-          echo "Located Android project: $ANDROID_DIR"
-
-      - name: Remove unsupported Java splash timeout call from source ZIP
-        run: |
-          MAIN_ACTIVITY="$(find source -type f -name MainActivity.java | head -n 1)"
-          if [ -z "$MAIN_ACTIVITY" ]; then echo "MainActivity.java not found"; exit 1; fi
-          sed -i '/import android.os.Handler;/d; /import android.os.Looper;/d; /new Handler(Looper.getMainLooper()).postDelayed(() -> RNBootSplash.hide(this), 15000);/d' "$MAIN_ACTIVITY"
-          echo "Removed incompatible RNBootSplash.hide(MainActivity) call"
+          echo "Located original Android project: $ANDROID_DIR"
 
       - name: Install JavaScript dependencies
         run: |
@@ -53,7 +46,7 @@ jobs:
             npm install
           fi
 
-      - name: Build Android release APK with bundled React Native JavaScript
+      - name: Build original Android release APK with bundled React Native JavaScript
         run: |
           cd "$PROJECT_DIR/android"
           chmod +x gradlew
@@ -79,7 +72,7 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AFRO-CITY-RP-Launcher-STARTUP-FIX-RELEASE-APK
+          name: AFRO-CITY-RP-Original-Launcher-IP-Only-APK
           path: artifacts/*.apk
           if-no-files-found: error
           retention-days: 14
